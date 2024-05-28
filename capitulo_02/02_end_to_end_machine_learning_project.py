@@ -22,11 +22,11 @@ from sklearn.metrics import mean_squared_error, mean_absolute_error
 from sklearn.tree import DecisionTreeRegressor
 from sklearn.model_selection import cross_val_score
 from sklearn.ensemble import RandomForestRegressor
-
+from sklearn.model_selection import GridSearchCV
 
 # %% 
 #* 2. Load Dataset
-housing = load_housing_data()
+housing = pd.read_csv("../data/housing.csv")
 
 # %% 
 #* 3. EXPLORAR LOS DATOS
@@ -81,7 +81,8 @@ full_pipeline = ColumnTransformer([
 
 housing_prepared = full_pipeline.fit_transform(housing)
 
-# %% BUSCANDO EL MODELO ADECUADO
+# %%
+#? SELECCIONAR MODELOS PROMETEDORES
 #* 6. ENTRENAR MODELO LinearRegression
 
 lin_reg = LinearRegression()
@@ -155,3 +156,15 @@ forest_rmse_scores = np.sqrt(-forest_scores)
 
 display_scores(forest_rmse_scores)
 # %%
+#* PERFECIONANDO EL MODELO BUSQUEDA EXHAUSTIVA
+
+param_grid = [
+    {'n_estimators': [3, 10, 30], 'max_features': [2, 4, 6, 8]},
+    {'bootstrap': [False], 'n_estimators': [3,10], 'max_features': [2, 3, 4]}
+]
+
+forest_reg = RandomForestRegressor()
+
+grid_search = GridSearchCV(forest_reg, param_grid, cv=5, scoring='neg_mean_squared_error', return_train_score=True)
+
+grid_search.fit(housing_prepared, housing_labels)
